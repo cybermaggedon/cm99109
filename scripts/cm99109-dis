@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+import sys
+from cm99109 import Instruction
+import intelhex
+
+ih = intelhex.IntelHex(sys.argv[1])
+ih.dump(sys.stdout)
+
+for start, end in ih.segments():
+    segment = [ih[i] for i in range(start, end)]
+
+    count = 0
+    while count < (end - start):
+        instr, skip = Instruction.from_code(segment[count:])
+        print(instr)
+        count += skip
+

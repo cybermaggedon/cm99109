@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import sys
+from cm99109 import Parser
+
+with open(sys.argv[1]) as f:
+    data = f.read()
+    tree = Parser.parse(data)
+    tree = Parser.resolve(tree)
+
+c = 0
+
+for label, instr in tree:
+
+    if instr != None:
+        bc = instr.to_code()
+        s = [ "%02x" % v for v in bc ]
+        s = " ".join(s)
+    else:
+        instr = ""
+        bc = []
+        s = ""
+
+    if label != None:
+        print("%03x: %-15s    %-34s [ %s ]" % (c, label + ":", instr, s))
+    else:
+        print("%03x: %-15s    %-34s [ %s ]" % (c, "", instr, s))
+
+    c += len(bc)
+

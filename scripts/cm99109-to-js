@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+import sys
+
+from cm99109.operand import Register, Constant, Address, Indirect
+from cm99109.parse import Parser
+
+with open(sys.argv[1]) as f:
+    data = f.read()
+    tree = Parser.parse(data)
+    tree = Parser.resolve(tree)
+
+def serialise_op(op):
+
+    if type(op) == Register:
+        sys.stdout.write('register("%s")' % op.name)
+        return
+    if type(op) == Address:
+        sys.stdout.write('address("%d")' % op.address)
+        return
+    if type(op) == Constant:
+        sys.stdout.write('constant("%d")' % op.value)
+        return
+    if type(op) == Indirect:
+        sys.stdout.write('indirect("%s", %d)' % (op.name, op.ix))
+        return
+        return "indirect:" + str(op.name) + " " + str(op.ix)
+
+    sys.stdout.write(str(op))
+
+def serialise_instr(instr):
+
+    sys.stdout.write("  %s(" % instr.token);
+
+    ops = []
+
+    if hasattr(instr, "op1"):
+        serialise_op(instr.op1)
+
+    if hasattr(instr, "op2"):
+        sys.stdout.write(", ")
+        serialise_op(instr.op2)
+
+    if hasattr(instr, "data"):
+        serialise_op(instr.data)
+
+    sys.stdout.write(")\n");
+
+objs = []
+
+print("[")
+for label, instr in tree:
+
+    if instr != None:
+        serialise_instr(instr)
+
+print("]")

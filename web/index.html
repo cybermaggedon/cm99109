@@ -1,0 +1,194 @@
+<html>
+  <style>
+    pre {
+	width: 90%;
+	border: 1px solid black;
+	padding: 5px;
+	margin: 5px;
+    }
+    textarea {
+	width: 80em;
+	height: 25em;
+    }
+  </style>
+  <body>
+
+    <pre id="output"></pre>
+    <textarea id="input"></textarea>
+    <br>
+    <button id="compile" onclick="compile()">Compile</button>
+    <button id="compile" onclick="flash()">Flash</button>
+    <pre id="diagout"></pre>
+
+  </body>
+
+  <script src="node_modules/nearley/lib/nearley.js"></script>
+  <script src="intel-hex.js"></script>
+  <script src="cm99109-grammar.js"></script>
+  <script src="cm99109-opcodes-browser.js"></script>
+
+  <script>
+
+    var params = [];
+
+    function get(id) {
+	var match = document.getElementById("match" + id.toString()).value;
+	var mask = document.getElementById("mask" + id.toString()).value;
+
+	if (match == "" && mask == "") {
+	    params[id] = null;
+	    return;
+	}
+
+	if (match.substring(0, 2) == "0x") {
+	    match = parseInt(match.substring(2), 16);
+	} else {
+	    match = parseInt(match);
+	}
+
+	if (mask.substring(0, 2) == "0x") {
+	    mask = parseInt(mask.substring(2), 16);
+	} else {
+	    mask = parseInt(mask);
+	}
+
+	if (isNaN(mask) || isNaN(match)) {
+	    params[id] = null;
+	    return;
+	}
+
+	params[id] = { "match": match, "mask": mask };
+
+    }
+
+    function compile() {
+
+	var program = document.getElementById("input").value;
+
+	setTimeout(function() {
+	    compileImage(program);
+	}, 100);
+
+    }
+
+    var hex;
+
+    function flash() {
+	var obj = {
+	    "flash": {
+		"image": hex
+	    }
+	};
+	ws.send(JSON.stringify(obj));
+    }
+
+    function fetchAsm() {
+	var x = new XMLHttpRequest();
+	x.addEventListener("load", fetchComplete);
+	x.open("GET", "hello.asm");
+	x.send();
+    }
+
+    var asm = "";
+
+    // Load car state fetch complete
+    function fetchComplete() {
+	try {
+
+	    asm = this.responseText;
+	    var input = document.getElementById("input");
+	    input.value = asm;
+
+	    compile();
+
+	} catch (e) {
+	    console.log("Exception:", e);
+	}
+
+    }
+
+    function compileImage(asm) {
+
+	try {
+
+	    var instrs = cm.asm_to_instrs(asm);
+	    var mc = cm.instrs_to_code(instrs);
+
+	    var memMap = new MemoryMap();
+	    memMap.set(0, new Uint8Array(mc));
+
+	    var elt = document.getElementById("output");
+	    while (output.firstChild)
+		output.removeChild(output.firstChild);
+
+	    hex = memMap.asHexString();
+	    var txtElt = document.createTextNode(hex);
+	    elt.appendChild(txtElt);
+
+	} catch (e) {
+	    console.log("Exception:", e);
+	}
+    }
+
+    var lines = [];
+var ws;
+
+var termData = [];
+var termSize = 20;
+function updateDisplay(id, value) {
+    var elt = document.getElementById(id);
+    if (elt) {
+        while (elt.firstChild) elt.removeChild(elt.firstChild);
+        elt.appendChild(document.createTextNode(value));
+    }
+}
+
+function updateTerm(line) {
+    termData.push(line);
+    while (termData.length > termSize) {
+        termData = termData.slice(1);
+    }
+    updateDisplay("diagout", termData.join("\r\n"));
+}
+
+function initWS() {
+
+    ws = new WebSocket('ws://localhost:8082/ws');
+    
+    ws.onopen = function() {
+        console.log("Connected to flash service.");
+    }
+
+    // Incoming message handler
+    ws.onmessage = function(event) {
+
+	var line = event.data;
+
+	updateTerm(line);
+
+    };
+
+    ws.onclose = function(event) {
+        ws.close();
+        console.log("Flash service closed.");
+        setTimeout(initWS, 1000);
+    }
+
+    ws.onerror = function(error) {
+        ws.close();
+        console.log("Flash service error: ", error);
+        setTimeout(initWS, 1000);
+    }
+
+}
+
+    setTimeout(function() {
+	fetchAsm();
+    }, 10);
+
+    initWS();
+
+  </script>
+
+</html>
+

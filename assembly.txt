@@ -1,0 +1,179 @@
+
+
+label : instruction    ; comment
+
+
+dec: 200
+hex: 0x200
+
+char: 'a'
+
+string: "Hello world!"
+
+registers:
+    $r1      0
+    $r2      1
+    $r3	     2
+    $r4	     3
+    $r5	     4
+    $r6	     5
+    $st	     6
+    $sp	     7
+
+Modes:
+Register
+Address using register and offset: [$r1+2]
+Address using constant [100] / address using a label @label
+Constant: 44
+
+Offset for indirect is: -16...+15
+
+INSTRUCTIONS
+
+# 0
+nop                                [0]
+
+# 10, 11, 12, 13, 14
+move reg, reg                      [10 r r]
+move reg, address		   [11 r a]
+move reg, constant		   [12 r c]
+move reg, [reg+ind]                [13 r r/i]
+move address, reg		   [14 a r]
+move address, constant		   [15 a c]
+move [reg+ind], reg    	   	   [16 r/i r]
+move [reg+ind], constant    	   [17 r/i c]
+
+db number / character / string
+
+# 20
+add reg, reg			   [20 r r]
+add reg, address		   [21 r a]
+add reg, constant		   [22 r c]
+add reg, [reg+ind]		   [23 r r/i]
+
+# 28
+sub reg, reg			   [28 r r]
+sub reg, address		   [29 r a]
+sub reg, constant		   [2a r c]
+sub reg, [reg+ind]		   [2b r r/i]
+
+#30
+inc reg				   [30 r]
+dec reg				   [31 r]
+
+# 40
+mul reg, reg			   [40 r r]
+mul reg, address		   [41 r a]
+mul reg, constant		   [42 r c]
+mul reg, [reg+ind]		   [43 r r/i]
+
+#44
+div reg, reg			   [44 r r]
+div reg, address		   [45 r a]
+div reg, constant		   [46 r c]
+div reg, [reg+ind]		   [47 r r/i]
+
+#48
+mod reg, reg			   [48 r r]
+mod reg, address		   [49 r a]
+mod reg, constant		   [4a r c]
+mod reg, [reg+ind]		   [4b r r/i]
+
+#50
+and reg, reg			   [40 r r]
+and reg, address		   [41 r a]
+and reg, constant		   [42 r c]
+and reg, [reg+ind]		   [43 r r/i]
+
+# 54
+or reg, reg			   [44 r r]
+or reg, address			   [45 r/a]
+or reg, constant		   [46 r/c]
+or reg, [reg+ind]		   [47 r r/i]
+
+# 58
+xor reg, reg			   [48 r r]
+xor reg, address		   [49 r a]
+xor reg, constant		   [4a r c]
+xor reg, [reg+ind]		   [4b r r/i]
+
+# 5c
+not reg				   [4c r]
+
+# 60
+shiftl reg, reg			   [50 r r]
+shiftl reg, address		   [51 r a]
+shiftl reg, constant		   [52 r c]
+shiftl reg, [reg+ind]		   [53 r r/i]
+
+# 64
+shiftr reg, reg			   [54 r r]
+shiftr reg, address		   [55 r a]
+shiftr reg, constant		   [56 r c]
+shiftr reg, [reg+ind]		   [57 r r/i]
+
+# 68
+equal reg, reg			   [60 r r]
+equal reg, address		   [61 r a]
+equal reg, constant		   [62 r c]
+equal reg, [reg+ind]		   [63 r r/i]
+
+# 70
+lt reg, reg			   [70 r r]
+lt reg, address		   	   [71 r a]
+lt reg, constant		   [72 r c]
+lt reg, [reg+ind]		   [73 r r/i]
+
+lte reg, reg			   [74 r r]
+lte reg, address		   [75 r a]
+lte reg, constant		   [76 r c]
+lte reg, [reg+ind]		   [77 r r/i]
+
+gt reg, reg			   [78 r r]
+gt reg, address		   	   [79 r a]
+gt reg, constant		   [7a r c]
+gt reg, [reg+ind]		   [7b r r/i]
+
+gte reg, reg			   [7c r r]
+gte reg, address		   [7d r a]
+gte reg, constant		   [7e r c]
+gte reg, [reg+ind]		   [7f r r/i]
+
+# 80, 81
+jmp address			   [80 a]
+jmp [$reg+ind]			   [81 r/i]
+jmpiftrue address		   [82 a]
+jmpiftrue [$reg+ind]		   [83 r/i]
+call address			   [84 a]
+call [$reg+ind]			   [85 r/i]
+jmpiffalse address		   [86 a]
+jmpiffalse [$reg+ind]		   [87 r/i]
+
+# 90
+ret				   [90]
+reti				   [91]   ; return from interrupts
+seti				   [92]   ; enable interrupts
+cleari				   [93]   ; disable interrupts
+
+# 94
+push reg			   [94 r]
+push address		   	   [95 a]
+push constant		   	   [96 c]
+push [reg+ind]		  	   [97 r/i]
+
+# 98
+pop reg				   [98 r]
+
+#b0
+hlt				   [b0]
+
+#b1
+sleep				   [b1]
+
+# b8
+setbit   reg, reg                  [b8 r r]
+setbit   reg, constant	           [b9 r c]
+clearbit reg, reg                  [bc r r]
+clearbit reg, constant		   [bd r c]
+isset    reg, reg             	   [be r r]
+isset    reg, constant             [bf r c]

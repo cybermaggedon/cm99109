@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+
+import aiohttp
+import asyncio
+import json
+import sys
+
+program = open(sys.argv[1], "r").read()
+
+class TestClient:
+    def __init__(self, url):
+        self.url = url
+
+    async def run(self):
+
+        self.session = aiohttp.ClientSession()
+        self.ws = await self.session.ws_connect(self.url)
+
+        loop = asyncio.get_event_loop()
+
+        print("Program...")
+
+        command = {
+            "flash": {
+                "image": program
+            }
+        }
+
+        await self.ws.send_str(json.dumps(command))
+
+        async for msg in self.ws:
+            if msg.data == "OK": break
+            if msg.data == "ERROR": break
+            print(msg.data)
+
+        await self.ws.close()
+        await self.session.close()
+
+c = TestClient("ws://0:8080/ws")
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(c.run())
+
