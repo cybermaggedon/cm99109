@@ -3,8 +3,8 @@ import asyncio
 
 from . memory import Memory
 from . operand import Register
-from . event import ResetEvent
-from . instruction import INTENABLE, TRUEFLAG, Instruction
+from . event import ResetEvent, Interrupt
+from . instruction import INTENABLE, TRUEFLAG, CARRYFLAG, Instruction
 
 import sys
 
